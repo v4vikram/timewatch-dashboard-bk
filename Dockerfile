@@ -14,7 +14,7 @@ RUN npm install --production
 COPY . .
 
 # Expose port (Cloud Run will still override PORT)
-EXPOSE 3001
+EXPOSE 8080
 
 # Start app
 CMD ["node", "server.js"]
