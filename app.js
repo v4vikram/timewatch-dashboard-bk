@@ -14,7 +14,7 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3002',
-  'https://timewatch-dashboard-fd-311005204045.europe-west1.run.app/'
+  'https://timewatch-dashboard-fd-311005204045.europe-west1.run.app'
 ];
 
 // Middlewares
