@@ -80,3 +80,6 @@ node_modules/.vite
 
 # Windows
 Thumbs.db
+storage-account-key.json
+
+
