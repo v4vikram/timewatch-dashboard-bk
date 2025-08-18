@@ -11,7 +11,7 @@ const storage = new Storage({
 });
 
 // console.log("bucket", process.env.GCP_BUCKET, process.env.GCP_PROJECT)
-// const bucket = storage.bucket(process.env.GCP_BUCKET);
+const bucket = storage.bucket(process.env.GCP_BUCKET);
 
 /**
  * Save an uploaded file to Google Cloud Storage
