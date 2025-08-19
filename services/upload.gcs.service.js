@@ -29,7 +29,7 @@ async function getStorageClient() {
     // Local dev: use JSON file
     storage = new Storage({
       projectId: process.env.GCP_PROJECT,
-      keyFilename: path.join(process.cwd(), process.env.STORAGE_ACCOUNT_KEY),
+      keyFilename: process.env.STORAGE_ACCOUNT_KEY,
     });
   }
 

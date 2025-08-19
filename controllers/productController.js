@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { saveUploadedFileToGCS } from "../services/upload.gcs.service.js";
+import { saveUploadedFile } from "../utils/saveUploadedFile.js";
 import ProductModel from "../models/ProductModel.js";
 import slugify from "../utils/slugify.js";
 
@@ -26,7 +27,7 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   const datasheetFile = getFile("datasheetFile");
   if (datasheetFile) {
-    product.datasheetFile = await saveUploadedFileToGCS(datasheetFile, [
+    product.datasheetFile = await saveUploadedFile(datasheetFile, [
       "uploads",
       "docs",
       "datasheet",
@@ -35,7 +36,7 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   const userManualFile = getFile("userManualFile");
   if (userManualFile) {
-    product.userManualFile = await saveUploadedFileToGCS(userManualFile, [
+    product.userManualFile = await saveUploadedFile(userManualFile, [
       "uploads",
       "docs",
       "user-manual",
@@ -44,7 +45,7 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   const connectionDiagramFile = getFile("connectionDiagramFile");
   if (connectionDiagramFile) {
-    product.connectionDiagramFile = await saveUploadedFileToGCS(
+    product.connectionDiagramFile = await saveUploadedFile(
       connectionDiagramFile,
       ["uploads", "docs", "diagram"]
     );
@@ -52,7 +53,7 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   const productImage = getFile("productImage");
   if (productImage) {
-    product.productImage = await saveUploadedFileToGCS(productImage, [
+    product.productImage = await saveUploadedFile(productImage, [
       "uploads",
       "products",
       "featured"
@@ -66,7 +67,7 @@ export const createProduct = asyncHandler(async (req, res) => {
       let imageUrl = "";
 
       if (imageFile) {
-        imageUrl = await saveUploadedFileToGCS(imageFile, ["uploads", "features"]);
+        imageUrl = await saveUploadedFile(imageFile, ["uploads", "features"]);
       }
 
       product.features.push({ title, image: imageUrl });
@@ -91,7 +92,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const body = req.body;
   const files = req.files || [];
-  console.log("files=>", files);
+  // console.log("files=>", files);
 
   // Find existing product
   const existingProduct = await ProductModel.findById(id);
@@ -123,7 +124,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
   // Save new files if provided
   const datasheetFile = getFile("datasheetFile");
   if (datasheetFile) {
-    product.datasheetFile = await saveUploadedFileToGCS(datasheetFile, [
+    product.datasheetFile = await saveUploadedFile(datasheetFile, [
       "uploads",
       "docs",
       "datasheet",
@@ -132,7 +133,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
 
   const userManualFile = getFile("userManualFile");
   if (userManualFile) {
-    product.userManualFile = await saveUploadedFileToGCS(userManualFile, [
+    product.userManualFile = await saveUploadedFile(userManualFile, [
       "uploads",
       "docs",
       "user-manual",
@@ -141,7 +142,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
 
   const connectionDiagramFile = getFile("connectionDiagramFile");
   if (connectionDiagramFile) {
-    product.connectionDiagramFile = await saveUploadedFileToGCS(
+    product.connectionDiagramFile = await saveUploadedFile(
       connectionDiagramFile,
       ["uploads", "docs", "diagram"]
     );
@@ -149,50 +150,60 @@ export const updateProduct = asyncHandler(async (req, res) => {
 
   const productImage = getFile("productImage");
   if (productImage) {
-    product.productImage = await saveUploadedFileToGCS(productImage, [
+    product.productImage = await saveUploadedFile(productImage, [
       "uploads",
       "products",
       "features",
     ]);
   }
 
-  // Handle features[] (replace if provided)
-
-
-
-
 
   if (product.features.length === 0) {
     product.features = existingProduct.features; // Keep old features if none provided
   }
 
-    if (Array.isArray(body.features)) {
-    for (let i = 0; i < body.features.length; i++) {
-      const title = body.features[i].title;
-      const imageFile = getFile(`features[${i}][image]`);
-      let imageUrl = "";
+// product features
+if (Array.isArray(body.features) && body.features.length > 0) {
+  const newFeatures = [];
 
-      if (imageFile) {
-        imageUrl = await saveUploadedFileToGCS(imageFile, ["uploads", "features"]);
-      }
+  for (let i = 0; i < body.features.length; i++) {
+    const title = body.features[i].title || "";
+    const imageFile = getFile(`features[${i}][image]`);
+    let imageUrl = "";
 
-      product.features.push({ title, image: imageUrl });
+    if (imageFile) {
+      imageUrl = await saveUploadedFile(imageFile, ["uploads", "features"]);
+    } else if (body.features[i].image) {
+      // Keep existing image if provided in body
+      imageUrl = body.features[i].image;
     }
+
+    newFeatures.push({ title, image: imageUrl });
   }
+
+  product.features = newFeatures; // Replace old features completely
+} else {
+  product.features = existingProduct.features; // Keep old if none sent
+}
+
 
   if (product.table.length === 0) {
     product.table = existingProduct.table; // Keep old table if none provided
   }
 
-  
-  if (Array.isArray(body.table)) {
-    for (let i = 0; i < body.table.length; i++) {
-      const column1 = body.table[i].column1;
-      const column2 = body.table[i].column2;
 
-      product.table.push({ column1, column2 });
-    }
+  // product technical table
+  if (Array.isArray(body.table)) {
+    const updated = body.table.map(item => ({
+      column1: item.column1,
+      column2: item.column2,
+    }));
+
+
+    // replace existing with updated (safe way)
+    product.table = updated;
   }
+
   // Update product in DB
   const updatedProduct = await ProductModel.findByIdAndUpdate(id, product, {
     new: true,
@@ -202,7 +213,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
 });
 
 export const getAllProducts = asyncHandler(async (req, res) => {
-  const products = await ProductModel.find({isDeleted: false}).sort({ createdAt: -1 }); // latest first
+  const products = await ProductModel.find({ isDeleted: false }).sort({ createdAt: -1 }); // latest first
   res.json({ success: true, count: products.length, products });
 });
 export const getProductById = asyncHandler(async (req, res) => {
@@ -221,7 +232,7 @@ export const getProductById = asyncHandler(async (req, res) => {
 export const getProductBySlug = asyncHandler(async (req, res) => {
   const { slug } = req.params;
 
-  const product = await ProductModel.findOne({productSlug: slug });
+  const product = await ProductModel.findOne({ productSlug: slug });
 
   if (!product) {
     return res.status(404).json({ success: false, message: "Product not found" });
