@@ -67,7 +67,7 @@ export const createProduct = asyncHandler(async (req, res) => {
       let imageUrl = "";
 
       if (imageFile) {
-        imageUrl = await saveUploadedFile(imageFile, ["uploads", "features"]);
+        imageUrl = await saveUploadedFile(imageFile, ["uploads","product", "features"]);
       }
 
       product.features.push({ title, image: imageUrl });
@@ -172,7 +172,7 @@ if (Array.isArray(body.features) && body.features.length > 0) {
     let imageUrl = "";
 
     if (imageFile) {
-      imageUrl = await saveUploadedFile(imageFile, ["uploads", "features"]);
+      imageUrl = await saveUploadedFile(imageFile, ["uploads", "product", "features"]);
     } else if (body.features[i].image) {
       // Keep existing image if provided in body
       imageUrl = body.features[i].image;
