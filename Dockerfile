@@ -1,20 +1,13 @@
-# Use Node.js LTS
-FROM node:18
+# Use Google Cloud distroless Node.js 18 image
+FROM gcr.io/distroless/nodejs18
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files and source
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install --production
 
-# Copy all files
 COPY . .
 
-# Expose port (Cloud Run will still override PORT)
 EXPOSE 8080
-
-# Start app
-CMD ["node", "server.js"]
+CMD ["server.js"]
