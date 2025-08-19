@@ -6,3 +6,11 @@ Here’s my backend setup for reference:
 (src/config, src/middlewares, src/routes, src/controllers, src/models, src/utils, src/validations, src/app.js, src/server.js)
 - Using MongoDB, JWT, Joi validation, Multer, Nodemailer
 Continue from here.
+
+
+
+
+PS E:\web2\next\backend> gcloud run services update timewatch-dashboard-bk `
+>>   --service-account timewatch-dashboard-storage@second-height-468706-s4.iam.gserviceaccount.com `
+>>   --project second-height-468706-s4 `
+>>   --region europe-west1

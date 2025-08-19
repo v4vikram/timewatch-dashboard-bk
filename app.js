@@ -8,6 +8,11 @@ import morgan from "morgan";
 import connectDB from "./config/db.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import routeStartup from "./routes/routeStartup.js";
+import path from "path"
+
+console.log("process.env.NODE_ENV", (process.env.NODE_ENV))
+console.log("process.env.STORAGE_ACCOUNT_KEY", process.env.STORAGE_ACCOUNT_KEY)
+console.log("path.join(process.cwd()", path.join(process.cwd()))
 
 
 connectDB();
