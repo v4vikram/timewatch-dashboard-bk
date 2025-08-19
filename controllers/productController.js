@@ -27,7 +27,7 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   const datasheetFile = getFile("datasheetFile");
   if (datasheetFile) {
-    product.datasheetFile = await saveUploadedFile(datasheetFile, [
+    product.datasheetFile = await saveUploadedFileToGCS(datasheetFile, [
       "uploads",
       "docs",
       "datasheet",
@@ -36,7 +36,7 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   const userManualFile = getFile("userManualFile");
   if (userManualFile) {
-    product.userManualFile = await saveUploadedFile(userManualFile, [
+    product.userManualFile = await saveUploadedFileToGCS(userManualFile, [
       "uploads",
       "docs",
       "user-manual",
@@ -45,7 +45,7 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   const connectionDiagramFile = getFile("connectionDiagramFile");
   if (connectionDiagramFile) {
-    product.connectionDiagramFile = await saveUploadedFile(
+    product.connectionDiagramFile = await saveUploadedFileToGCS(
       connectionDiagramFile,
       ["uploads", "docs", "diagram"]
     );
@@ -53,7 +53,7 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   const productImage = getFile("productImage");
   if (productImage) {
-    product.productImage = await saveUploadedFile(productImage, [
+    product.productImage = await saveUploadedFileToGCS(productImage, [
       "uploads",
       "products",
       "featured"
@@ -67,7 +67,7 @@ export const createProduct = asyncHandler(async (req, res) => {
       let imageUrl = "";
 
       if (imageFile) {
-        imageUrl = await saveUploadedFile(imageFile, ["uploads","product", "features"]);
+        imageUrl = await saveUploadedFileToGCS(imageFile, ["uploads", "features"]);
       }
 
       product.features.push({ title, image: imageUrl });
@@ -124,7 +124,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
   // Save new files if provided
   const datasheetFile = getFile("datasheetFile");
   if (datasheetFile) {
-    product.datasheetFile = await saveUploadedFile(datasheetFile, [
+    product.datasheetFile = await saveUploadedFileToGCS(datasheetFile, [
       "uploads",
       "docs",
       "datasheet",
@@ -133,7 +133,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
 
   const userManualFile = getFile("userManualFile");
   if (userManualFile) {
-    product.userManualFile = await saveUploadedFile(userManualFile, [
+    product.userManualFile = await saveUploadedFileToGCS(userManualFile, [
       "uploads",
       "docs",
       "user-manual",
@@ -142,7 +142,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
 
   const connectionDiagramFile = getFile("connectionDiagramFile");
   if (connectionDiagramFile) {
-    product.connectionDiagramFile = await saveUploadedFile(
+    product.connectionDiagramFile = await saveUploadedFileToGCS(
       connectionDiagramFile,
       ["uploads", "docs", "diagram"]
     );
@@ -150,7 +150,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
 
   const productImage = getFile("productImage");
   if (productImage) {
-    product.productImage = await saveUploadedFile(productImage, [
+    product.productImage = await saveUploadedFileToGCS(productImage, [
       "uploads",
       "products",
       "features",
@@ -172,7 +172,7 @@ if (Array.isArray(body.features) && body.features.length > 0) {
     let imageUrl = "";
 
     if (imageFile) {
-      imageUrl = await saveUploadedFile(imageFile, ["uploads", "product", "features"]);
+      imageUrl = await saveUploadedFileToGCS(imageFile, ["uploads", "features"]);
     } else if (body.features[i].image) {
       // Keep existing image if provided in body
       imageUrl = body.features[i].image;
