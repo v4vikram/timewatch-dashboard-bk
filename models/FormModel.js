@@ -50,13 +50,13 @@ const partnerSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "Name is required"],
-      minlength: [3, "Name must be at least 3 characters"],
+      // minlength: [3, "Name must be at least 3 characters"],
       trim: true,
     },
     email: {
       type: String,
       required: [true, "Email is required"],
-      match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
+      // match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
     },
     phone: {
       type: String,
@@ -77,7 +77,7 @@ const partnerSchema = new mongoose.Schema(
     },
     companyName: {
       type: String,
-      minlength: [3, "Company name must be at least 3 characters"],
+      // minlength: [3, "Company name must be at least 3 characters"],
       default: null,
     },
     staffSize: {

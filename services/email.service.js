@@ -3,21 +3,22 @@ import transporter from "../utils/transporter.js";
 export const sendEmailToCompany = async ({
   html,
   subject = "New Form Submission",
-  title = "New Form Submission",
-  to = [process.env.DEFAULT_EMAIL || "v4vikram.dev@gmail.com"], // fallback
+  to, // can be string OR array
 }) => {
+  const recipients = to;
+
   const mailOptions = {
     from: `"TimeWatch Contact Form" <${process.env.EMAIL_USER}>`,
-    to, // accepts array or single email
+    to: recipients, // nodemailer accepts string OR array
     subject,
-    html: html,
+    html,
   };
 
   await transporter.sendMail(mailOptions);
 };
 
 export const sendMessageToCustomer = async ({ name, email }) => {
-  console.log("template data", name, email)
+  // console.log("template data", name, email)
   const mailOptions = {
     from: `"TimeWatch Infocom Pvt. Ltd." <${process.env.EMAIL_USER}>`,
     to: email,

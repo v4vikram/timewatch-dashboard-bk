@@ -53,3 +53,61 @@ export const customerSchema = Joi.object({
             'string.max': 'Message must not exceed {#limit} characters',
         }),
 });
+
+
+// Backend validation schema for partner form
+export const partnerSchema = Joi.object({
+  name: Joi.string()
+    .min(3)
+    .required()
+    .messages({
+      "string.base": "Name must be a string",
+      "string.empty": "Name is required",
+      "string.min": "Name must be at least 3 characters",
+      "any.required": "Name is required",
+    }),
+
+  email: Joi.string()
+    .email({ tlds: { allow: false } })
+    .required()
+    .messages({
+      "string.base": "Email must be a string",
+      "string.email": "Invalid email address",
+      "string.empty": "Email is required",
+      "any.required": "Email is required",
+    }),
+
+  phone: Joi.string()
+    .pattern(/^[0-9]{10}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "Mobile number must be exactly 10 digits",
+      "string.empty": "Phone number is required",
+      "any.required": "Phone number is required",
+    }),
+
+  pinCode: Joi.string().required().messages({
+    "string.empty": "Pincode is required",
+    "any.required": "Pincode is required",
+  }),
+
+  // country: Joi.string().optional(),
+
+  // state: Joi.string().optional(),
+
+  companyName: Joi.string().min(3).optional().messages({
+    "string.min": "Company name must be at least 3 characters",
+  }),
+
+  // staffSize: Joi.string().optional(),  
+
+  // For files, we check that they exist (multer should handle actual file type/size)
+  gstCertificate: Joi.object().required().messages({
+    "any.required": "GST Certificate is required",
+  }),
+
+  panCard: Joi.object().required().messages({
+    "any.required": "PAN Card is required",
+  }),
+});
+

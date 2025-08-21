@@ -4,15 +4,32 @@ import { saveUploadedFile } from "../utils/saveUploadedFile.js";
 import ProductModel from "../models/ProductModel.js";
 import slugify from "../utils/slugify.js";
 
+
+
 export const createProduct = asyncHandler(async (req, res) => {
   const body = req.body;
   const files = req.files;
+
+  const slug = slugify(body.productName, { lower: true, strict: true });
+
+  // 🔎 Check if product already exists by name OR slug
+  const existingProduct = await ProductModel.findOne({
+    $or: [{ productName: body.productName }, { productSlug: slug }],
+    isDeleted: false,
+  });
+
+  if (existingProduct) {
+    return res.status(400).json({
+      success: false,
+      message: "Product already exists",
+    });
+  }
 
   const product = {
     categoryName: body.categoryName,
     subCategoryName: body.subCategoryName,
     productName: body.productName,
-    productSlug: slugify(body.productName),
+    productSlug: slug,
     description: body.description,
     datasheetFile: null,
     connectionDiagramFile: null,
@@ -56,7 +73,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     product.productImage = await saveUploadedFileToGCS(productImage, [
       "uploads",
       "products",
-      "featured"
+      "featured",
     ]);
   }
 
@@ -83,10 +100,15 @@ export const createProduct = asyncHandler(async (req, res) => {
     }
   }
 
-
   const productCreated = await ProductModel.create(product);
-  res.json({ success: true, product: productCreated });
+
+  res.status(201).json({
+    success: true,
+    message: "Product created successfully",
+    product: productCreated,
+  });
 });
+
 
 export const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -162,29 +184,29 @@ export const updateProduct = asyncHandler(async (req, res) => {
     product.features = existingProduct.features; // Keep old features if none provided
   }
 
-// product features
-if (Array.isArray(body.features) && body.features.length > 0) {
-  const newFeatures = [];
+  // product features
+  if (Array.isArray(body.features) && body.features.length > 0) {
+    const newFeatures = [];
 
-  for (let i = 0; i < body.features.length; i++) {
-    const title = body.features[i].title || "";
-    const imageFile = getFile(`features[${i}][image]`);
-    let imageUrl = "";
+    for (let i = 0; i < body.features.length; i++) {
+      const title = body.features[i].title || "";
+      const imageFile = getFile(`features[${i}][image]`);
+      let imageUrl = "";
 
-    if (imageFile) {
-      imageUrl = await saveUploadedFileToGCS(imageFile, ["uploads", "features"]);
-    } else if (body.features[i].image) {
-      // Keep existing image if provided in body
-      imageUrl = body.features[i].image;
+      if (imageFile) {
+        imageUrl = await saveUploadedFileToGCS(imageFile, ["uploads", "features"]);
+      } else if (body.features[i].image) {
+        // Keep existing image if provided in body
+        imageUrl = body.features[i].image;
+      }
+
+      newFeatures.push({ title, image: imageUrl });
     }
 
-    newFeatures.push({ title, image: imageUrl });
+    product.features = newFeatures; // Replace old features completely
+  } else {
+    product.features = existingProduct.features; // Keep old if none sent
   }
-
-  product.features = newFeatures; // Replace old features completely
-} else {
-  product.features = existingProduct.features; // Keep old if none sent
-}
 
 
   if (product.table.length === 0) {
@@ -304,5 +326,29 @@ export const getTrashedProducts = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     products: trashedProducts,
+  });
+});
+
+// 🔎 Search products by name or keywords
+export const searchProducts = asyncHandler(async (req, res) => {
+  const { q } = req.query; // ?q=attendance
+
+  if (!q) {
+    return res.status(400).json({ message: "Search query (q) is required" });
+  }
+
+  const products = await ProductModel.find({
+    isDeleted: false,
+    status: "published",   // ✅ only published products
+    $or: [
+      { productName: { $regex: q, $options: "i" } },
+      { productkeywords: { $regex: q, $options: "i" } },
+    ],
+  }).select("productName categoryName subCategoryName productSlug status");
+
+  res.status(200).json({
+    success: true,
+    count: products.length,
+    products,
   });
 });
