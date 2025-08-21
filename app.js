@@ -40,7 +40,14 @@ app.use(morgan("dev"));
 app.use(express.static("public")); // serve uploaded files
 
 
-  app.use(upload.none());
+app.use((req, res, next) => {
+  const contentType = req.headers['content-type'] || '';
+  if (contentType.startsWith('multipart/form-data')) {
+    return upload.none()(req, res, next); // parse only form fields, no files
+  }
+  next();
+});
+
 
 // routes
 routeStartup(app);
