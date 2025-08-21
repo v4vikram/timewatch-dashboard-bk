@@ -14,3 +14,7 @@ PS E:\web2\next\backend> gcloud run services update timewatch-dashboard-bk `
 >>   --service-account timewatch-dashboard-storage@second-height-468706-s4.iam.gserviceaccount.com `
 >>   --project second-height-468706-s4 `
 >>   --region europe-west1
+
+- run localy same like cloud using docker
+docker build -t my-backend:test .
+docker run -p 8080:8080 my-backend:test
