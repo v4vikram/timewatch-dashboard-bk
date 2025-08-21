@@ -92,7 +92,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const body = req.body;
   const files = req.files || [];
-  // console.log("files=>", files);
+  console.log("req.body", req.body);
 
   // Find existing product
   const existingProduct = await ProductModel.findById(id);

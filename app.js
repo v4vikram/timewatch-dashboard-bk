@@ -12,11 +12,6 @@ import path from "path"
 import multer from "multer";
 const upload = multer();
 
-console.log("process.env.NODE_ENV", (process.env.NODE_ENV))
-console.log("process.env.STORAGE_ACCOUNT_KEY", process.env.STORAGE_ACCOUNT_KEY)
-console.log("path.join(process.cwd()", path.join(process.cwd()))
-
-
 connectDB();
 
 const app = express();
@@ -43,7 +38,11 @@ app.use(cors({
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.static("public")); // serve uploaded files
-app.use(upload.none());
+
+
+if (process.env.NODE_ENV == "production") {
+  app.use(upload.none());
+}
 
 // routes
 routeStartup(app);
