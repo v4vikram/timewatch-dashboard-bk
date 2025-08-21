@@ -40,9 +40,7 @@ app.use(morgan("dev"));
 app.use(express.static("public")); // serve uploaded files
 
 
-if (process.env.NODE_ENV == "production") {
   app.use(upload.none());
-}
 
 // routes
 routeStartup(app);
