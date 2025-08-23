@@ -15,6 +15,12 @@ const productSchema = new mongoose.Schema({
     productImage: String,
     productkeywords: String,
     isFeatured: Boolean,
+    productFaq: [
+        {
+            column1: String,
+            column2: String,
+        },
+    ],
     features: [
         {
             title: String,

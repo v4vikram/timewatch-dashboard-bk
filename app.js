@@ -8,9 +8,8 @@ import morgan from "morgan";
 import connectDB from "./config/db.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import routeStartup from "./routes/routeStartup.js";
-import path from "path"
 import multer from "multer";
-const upload = multer();
+
 
 connectDB();
 
@@ -39,16 +38,6 @@ app.use(cors({
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.static("public")); // serve uploaded files
-
-
-// app.use((req, res, next) => {
-//   const contentType = req.headers['content-type'] || '';
-//   if (contentType.startsWith('multipart/form-data')) {
-//     return upload.none()(req, res, next); // parse only form fields, no files
-//   }
-//   next();
-// });
-
 
 // routes
 routeStartup(app);

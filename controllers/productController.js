@@ -43,6 +43,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     userManualFile: null,
     productkeywords: body.productkeywords,
     status: body.status,
+    productFaq:[],
     features: [],
     table: [],
   };
@@ -104,6 +105,14 @@ export const createProduct = asyncHandler(async (req, res) => {
       const column2 = body.table[i].column2;
 
       product.table.push({ column1, column2 });
+    }
+  }
+  if (Array.isArray(body.productFaq)) {
+    for (let i = 0; i < body.productFaq.length; i++) {
+      const column1 = body.productFaq[i].column1;
+      const column2 = body.productFaq[i].column2;
+
+      product.productFaq.push({ column1, column2 });
     }
   }
 
@@ -236,6 +245,20 @@ export const updateProduct = asyncHandler(async (req, res) => {
     // replace existing with updated (safe way)
     product.table = updated;
   }
+
+  // product technical table
+  if (Array.isArray(body.productFaq)) {
+    const updated = body.productFaq.map(item => ({
+      column1: item.column1,
+      column2: item.column2,
+    }));
+
+
+    // replace existing with updated (safe way)
+    product.productFaq = updated;
+  }
+
+
 
   // Update product in DB
   const updatedProduct = await ProductModel.findByIdAndUpdate(id, product, {
