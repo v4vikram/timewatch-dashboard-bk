@@ -3,7 +3,9 @@ import mongoose from "mongoose";
 const productSchema = new mongoose.Schema({
     status: String,
     categoryName: String,
+    categorySlug: String,       // ✅ new field
     subCategoryName: String,
+    subCategorySlug: String,    // ✅ new field
     productName: String,
     productSlug: String,
     description: String,

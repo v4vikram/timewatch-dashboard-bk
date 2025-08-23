@@ -28,6 +28,13 @@ export const createProduct = asyncHandler(async (req, res) => {
   const product = {
     categoryName: body.categoryName,
     subCategoryName: body.subCategoryName,
+
+
+    categorySlug: slugify(body.categoryName),
+
+
+    subCategorySlug: slugify(body.subCategoryName),
+
     productName: body.productName,
     productSlug: slug,
     description: body.description,
@@ -127,7 +134,11 @@ export const updateProduct = asyncHandler(async (req, res) => {
   // Prepare update object (default to existing values)
   const product = {
     categoryName: body.categoryName || existingProduct.categoryName,
+    categorySlug: slugify(body.categoryName) || slugify(existingProduct.categoryName),
+
     subCategoryName: body.subCategoryName || existingProduct.subCategoryName,
+    subCategorySlug: slugify(body.subCategoryName) || slugify(existingProduct.subCategoryName),
+
     productName: body.productName || existingProduct.productName,
     productSlug: body.productSlug || existingProduct.productSlug,
     description: body.description || existingProduct.description,
@@ -238,6 +249,77 @@ export const getAllProducts = asyncHandler(async (req, res) => {
   const products = await ProductModel.find({ isDeleted: false }).sort({ createdAt: -1 }); // latest first
   res.json({ success: true, count: products.length, products });
 });
+
+export const getAllFormatProducts = asyncHandler(async (req, res) => {
+  const products = await ProductModel.aggregate([
+  {
+    $match: { 
+      isDeleted: false, 
+      status: "published"   // ✅ only published products
+    }
+  },
+  { $sort: { createdAt: -1 } },
+
+    // group by category + subCategory to collect products
+    {
+      $group: {
+        _id: {
+          categoryName: "$categoryName",
+          categorySlug: "$categorySlug",
+          subCategoryName: "$subCategoryName",
+          subCategorySlug: "$subCategorySlug",
+        },
+        products: {
+          $push: {
+            productName: "$productName",
+            productSlug: "$productSlug",
+            productimg: "$productImage",
+            description: "$description",
+            keywords: { $split: ["$productkeywords", ","] },
+            features: "$features",
+            files: {
+              Datasheet: { link: "$datasheetFile" },
+              "Connection Diagram": { link: "$connectionDiagramFile" },
+              "User Manual": { link: "$userManualFile" },
+            },
+            table: "$table",
+          }
+        }
+      }
+    },
+
+    // group again by category to collect subcategories
+    {
+      $group: {
+        _id: { categoryName: "$_id.categoryName", categorySlug: "$_id.categorySlug" },
+        subCategories: {
+          $push: {
+            subCategoryName: "$_id.subCategoryName",
+            subCategorySlug: "$_id.subCategorySlug",
+            products: "$products"
+          }
+        }
+      }
+    },
+
+    // final reshape
+    {
+      $project: {
+        _id: 0,
+        categoryName: "$_id.categoryName",
+        categorySlug: "$_id.categorySlug",
+        heroimage: "",   // optional static placeholder
+        marketimg: "",
+        description: "",
+        subCategories: 1
+      }
+    }
+  ]);
+
+  res.json({ success: true, count: products.length, products });
+});
+
+
 export const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -352,3 +434,21 @@ export const searchProducts = asyncHandler(async (req, res) => {
     products,
   });
 });
+
+export const showProductByCat = asyncHandler(async (req, res) => {
+  const { cat, subCat } = req.params;
+
+  const products = await ProductModel.find({
+    categorySlug: cat.toLowerCase(),
+    subCategorySlug: subCat.toLowerCase(),
+     status: "published",         // ✅ only published
+    isDeleted: false  
+  });
+
+  if (!products.length) {
+    return res.status(404).json({ message: "No products found" });
+  }
+
+  res.status(200).json(products);
+});
+
