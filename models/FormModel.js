@@ -36,6 +36,11 @@ const customerSchema = new mongoose.Schema(
       trim: true,
       // maxlength: [500, "Message must not exceed 500 characters"],
     },
+    type:{
+      type: String,
+      enum:["new","sales","support"],
+      default:"new"
+    }
   },
   { timestamps: true }
 );
@@ -67,11 +72,19 @@ const partnerSchema = new mongoose.Schema(
       type: String,
       required: [true, "Pincode is required"],
     },
+    landline: {
+      type: String,
+     default: null,
+    },
     country: {
       type: String,
       default: null,
     },
     state: {
+      type: String,
+      default: null,
+    },
+    address: {
       type: String,
       default: null,
     },
@@ -86,11 +99,11 @@ const partnerSchema = new mongoose.Schema(
     },
     gstCertificate: {
       type: String, // store filename or file path (uploaded doc)
-      required: [true, "GST Certificate is required"],
+      required: [true, "GST Certificate is required2"],
     },
     panCard: {
       type: String, // store filename or file path
-      required: [true, "PAN Card is required"],
+      required: [true, "PAN Card is required2"],
     },
   },
   { timestamps: true }

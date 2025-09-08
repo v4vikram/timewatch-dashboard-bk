@@ -1,5 +1,5 @@
 import express from "express";
-import { createProduct, deleteProduct, getAllProducts,   getProductById, getAllFormatProducts,   getProductBySlug, getTrashedProducts, restoreProduct,  searchProducts,  showProductByCat,  trashProduct, updateProduct } from "../controllers/productController.js";
+import { createProduct, deleteProduct, getAllProducts,   getProductById, getAllFormatProducts,   getProductBySlug, getTrashedProducts, restoreProduct,  searchProducts,  showProductByCat,  trashProduct, updateProduct, getAllFeaturedProducts } from "../controllers/productController.js";
 import multer from "multer";
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -16,6 +16,7 @@ router.put("/trashed/:id", trashProduct);
 router.post("/restore/:id", restoreProduct);
 router.delete("/:id", deleteProduct);
 router.get("/formated-product", getAllFormatProducts);
+router.get("/featured-products", getAllFeaturedProducts);
 
 
 export default router;

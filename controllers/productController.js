@@ -43,7 +43,8 @@ export const createProduct = asyncHandler(async (req, res) => {
     userManualFile: null,
     productkeywords: body.productkeywords,
     status: body.status,
-    productFaq:[],
+    isFeatured: body.isFeatured || false,
+    productFaq: [],
     features: [],
     table: [],
   };
@@ -130,7 +131,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const body = req.body;
   const files = req.files || [];
-  console.log("req.body", req.body);
+  // console.log("req.body", req.body);
 
   // Find existing product
   const existingProduct = await ProductModel.findById(id);
@@ -156,6 +157,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
     userManualFile: existingProduct.userManualFile,
     productkeywords: body.productkeywords || existingProduct.productkeywords,
     status: body.status || existingProduct.status,
+    isFeatured: body.isFeatured !== undefined ? body.isFeatured : existingProduct.isFeatured,
     features: [],
     table: [],
     productImage: existingProduct.productImage,
@@ -247,6 +249,11 @@ export const updateProduct = asyncHandler(async (req, res) => {
   }
 
   // product technical table
+  console.log("body.productFaq updated", body.productFaq)
+  if (body.productFaq == undefined) {
+    product.productFaq = [];
+  }
+
   if (Array.isArray(body.productFaq)) {
     const updated = body.productFaq.map(item => ({
       column1: item.column1,
@@ -272,16 +279,20 @@ export const getAllProducts = asyncHandler(async (req, res) => {
   const products = await ProductModel.find({ isDeleted: false }).sort({ createdAt: -1 }); // latest first
   res.json({ success: true, count: products.length, products });
 });
+export const getAllFeaturedProducts = asyncHandler(async (req, res) => {
+  const products = await ProductModel.find({ isDeleted: false, isFeatured:true }).sort({ createdAt: -1 }); // latest first
+  res.json({ success: true, count: products.length, products });
+});
 
 export const getAllFormatProducts = asyncHandler(async (req, res) => {
   const products = await ProductModel.aggregate([
-  {
-    $match: { 
-      isDeleted: false, 
-      status: "published"   // ✅ only published products
-    }
-  },
-  { $sort: { createdAt: -1 } },
+    {
+      $match: {
+        isDeleted: false,
+        status: "published"   // ✅ only published products
+      }
+    },
+    { $sort: { createdAt: -1 } },
 
     // group by category + subCategory to collect products
     {
@@ -442,14 +453,19 @@ export const searchProducts = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Search query (q) is required" });
   }
 
+  // normalize the query
+  const normalizedQuery = q.toLowerCase().replace(/[^a-z0-9]/g, "");
+  // console.log("normalizedQuery", normalizedQuery)
+
   const products = await ProductModel.find({
     isDeleted: false,
-    status: "published",   // ✅ only published products
+    status: "published",
     $or: [
-      { productName: { $regex: q, $options: "i" } },
-      { productkeywords: { $regex: q, $options: "i" } },
+      { productName: { $regex: q, $options: "i" } },       // normal search
+      { productName: { $regex: normalizedQuery, $options: "i" } }, // normalized match
+      { productkeywords: { $regex: q, $options: "i" } },   // keyword search
     ],
-  }).select("productName categoryName subCategoryName productSlug status");
+  }).select("productName categoryName subCategoryName productSlug status productImage");
 
   res.status(200).json({
     success: true,
@@ -458,14 +474,15 @@ export const searchProducts = asyncHandler(async (req, res) => {
   });
 });
 
+
 export const showProductByCat = asyncHandler(async (req, res) => {
   const { cat, subCat } = req.params;
 
   const products = await ProductModel.find({
     categorySlug: cat.toLowerCase(),
     subCategorySlug: subCat.toLowerCase(),
-     status: "published",         // ✅ only published
-    isDeleted: false  
+    status: "published",         // ✅ only published
+    isDeleted: false
   });
 
   if (!products.length) {

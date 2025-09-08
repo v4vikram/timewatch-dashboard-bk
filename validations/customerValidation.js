@@ -91,23 +91,26 @@ export const partnerSchema = Joi.object({
     "any.required": "Pincode is required",
   }),
 
-  // country: Joi.string().optional(),
+  country: Joi.string().optional().allow(null, ''),  
+  state: Joi.string().optional().allow(null, ''),  
+  address: Joi.string().optional().allow(null, ''),  
 
-  // state: Joi.string().optional(),
-
-  companyName: Joi.string().min(3).optional().messages({
+  companyName: Joi.string().min(3).optional().allow(null, '').messages({
     "string.min": "Company name must be at least 3 characters",
   }),
 
-  // staffSize: Joi.string().optional(),  
+  staffSize: Joi.string().optional().allow(null, ''),
+  landline: Joi.string().optional().allow(null, ''),
 
-  // For files, we check that they exist (multer should handle actual file type/size)
-  gstCertificate: Joi.object().required().messages({
-    "any.required": "GST Certificate is required",
-  }),
+  // gstCertificate: Joi.string().required().messages({
+  //   "string.empty": "GST Certificate is required",
+  //   "any.required": "GST Certificate is required",
+  // }),
 
-  panCard: Joi.object().required().messages({
-    "any.required": "PAN Card is required",
-  }),
+  // panCard: Joi.string().required().messages({
+  //   "string.empty": "PAN Card is required",
+  //   "any.required": "PAN Card is required",
+  // }),
 });
+
 

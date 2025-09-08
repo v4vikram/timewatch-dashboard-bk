@@ -1,5 +1,5 @@
 import express from "express";
-import { homePageForm, partnerPageForm } from "../controllers/formController.js";
+import { deleteCustomerById, getAllCustomers, homePageForm, partnerPageForm, updatedCustomer } from "../controllers/formController.js";
 import { validate } from "../middlewares/validateMiddleware.js"
 import { customerSchema, partnerSchema } from "../validations/customerValidation.js"
 
@@ -10,6 +10,9 @@ const router = express.Router();
 
 
 router.post('/customer', validate(customerSchema), homePageForm);
+router.get('/customers', getAllCustomers);
+router.put('/customers/:id', updatedCustomer);
+router.delete('/customer/delete/:id', deleteCustomerById);
 router.post('/partner', upload.any(), validate(partnerSchema), partnerPageForm);
 
 export default router;
