@@ -4,8 +4,6 @@ import { saveUploadedFile } from "../utils/saveUploadedFile.js";
 import ProductModel from "../models/ProductModel.js";
 import slugify from "../utils/slugify.js";
 
-
-
 export const createProduct = asyncHandler(async (req, res) => {
   const body = req.body;
   const files = req.files;
@@ -29,9 +27,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     categoryName: body.categoryName,
     subCategoryName: body.subCategoryName,
 
-
     categorySlug: slugify(body.categoryName),
-
 
     subCategorySlug: slugify(body.subCategoryName),
 
@@ -93,7 +89,10 @@ export const createProduct = asyncHandler(async (req, res) => {
       let imageUrl = "";
 
       if (imageFile) {
-        imageUrl = await saveUploadedFileToGCS(imageFile, ["uploads", "features"]);
+        imageUrl = await saveUploadedFileToGCS(imageFile, [
+          "uploads",
+          "features",
+        ]);
       }
 
       product.features.push({ title, image: imageUrl });
@@ -126,7 +125,6 @@ export const createProduct = asyncHandler(async (req, res) => {
   });
 });
 
-
 export const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const body = req.body;
@@ -144,10 +142,12 @@ export const updateProduct = asyncHandler(async (req, res) => {
   // Prepare update object (default to existing values)
   const product = {
     categoryName: body.categoryName || existingProduct.categoryName,
-    categorySlug: slugify(body.categoryName) || slugify(existingProduct.categoryName),
+    categorySlug:
+      slugify(body.categoryName) || slugify(existingProduct.categoryName),
 
     subCategoryName: body.subCategoryName || existingProduct.subCategoryName,
-    subCategorySlug: slugify(body.subCategoryName) || slugify(existingProduct.subCategoryName),
+    subCategorySlug:
+      slugify(body.subCategoryName) || slugify(existingProduct.subCategoryName),
 
     productName: body.productName || existingProduct.productName,
     productSlug: body.productSlug || existingProduct.productSlug,
@@ -157,7 +157,10 @@ export const updateProduct = asyncHandler(async (req, res) => {
     userManualFile: existingProduct.userManualFile,
     productkeywords: body.productkeywords || existingProduct.productkeywords,
     status: body.status || existingProduct.status,
-    isFeatured: body.isFeatured !== undefined ? body.isFeatured : existingProduct.isFeatured,
+    isFeatured:
+      body.isFeatured !== undefined
+        ? body.isFeatured
+        : existingProduct.isFeatured,
     features: [],
     table: [],
     productImage: existingProduct.productImage,
@@ -201,7 +204,6 @@ export const updateProduct = asyncHandler(async (req, res) => {
     ]);
   }
 
-
   if (product.features.length === 0) {
     product.features = existingProduct.features; // Keep old features if none provided
   }
@@ -216,7 +218,10 @@ export const updateProduct = asyncHandler(async (req, res) => {
       let imageUrl = "";
 
       if (imageFile) {
-        imageUrl = await saveUploadedFileToGCS(imageFile, ["uploads", "features"]);
+        imageUrl = await saveUploadedFileToGCS(imageFile, [
+          "uploads",
+          "features",
+        ]);
       } else if (body.features[i].image) {
         // Keep existing image if provided in body
         imageUrl = body.features[i].image;
@@ -230,42 +235,36 @@ export const updateProduct = asyncHandler(async (req, res) => {
     product.features = existingProduct.features; // Keep old if none sent
   }
 
-
   if (product.table.length === 0) {
     product.table = existingProduct.table; // Keep old table if none provided
   }
 
-
   // product technical table
   if (Array.isArray(body.table)) {
-    const updated = body.table.map(item => ({
+    const updated = body.table.map((item) => ({
       column1: item.column1,
       column2: item.column2,
     }));
-
 
     // replace existing with updated (safe way)
     product.table = updated;
   }
 
   // product technical table
-  console.log("body.productFaq updated", body.productFaq)
+  console.log("body.productFaq updated", body.productFaq);
   if (body.productFaq == undefined) {
     product.productFaq = [];
   }
 
   if (Array.isArray(body.productFaq)) {
-    const updated = body.productFaq.map(item => ({
+    const updated = body.productFaq.map((item) => ({
       column1: item.column1,
       column2: item.column2,
     }));
 
-
     // replace existing with updated (safe way)
     product.productFaq = updated;
   }
-
-
 
   // Update product in DB
   const updatedProduct = await ProductModel.findByIdAndUpdate(id, product, {
@@ -276,11 +275,16 @@ export const updateProduct = asyncHandler(async (req, res) => {
 });
 
 export const getAllProducts = asyncHandler(async (req, res) => {
-  const products = await ProductModel.find({ isDeleted: false }).sort({ createdAt: -1 }); // latest first
+  const products = await ProductModel.find({ isDeleted: false }).sort({
+    createdAt: -1,
+  }); // latest first
   res.json({ success: true, count: products.length, products });
 });
 export const getAllFeaturedProducts = asyncHandler(async (req, res) => {
-  const products = await ProductModel.find({ isDeleted: false, isFeatured:true }).sort({ createdAt: -1 }); // latest first
+  const products = await ProductModel.find({
+    isDeleted: false,
+    isFeatured: true,
+  }).sort({ createdAt: -1 }); // latest first
   res.json({ success: true, count: products.length, products });
 });
 
@@ -289,8 +293,8 @@ export const getAllFormatProducts = asyncHandler(async (req, res) => {
     {
       $match: {
         isDeleted: false,
-        status: "published"   // ✅ only published products
-      }
+        status: "published", // ✅ only published products
+      },
     },
     { $sort: { createdAt: -1 } },
 
@@ -317,23 +321,26 @@ export const getAllFormatProducts = asyncHandler(async (req, res) => {
               "User Manual": { link: "$userManualFile" },
             },
             table: "$table",
-          }
-        }
-      }
+          },
+        },
+      },
     },
 
     // group again by category to collect subcategories
     {
       $group: {
-        _id: { categoryName: "$_id.categoryName", categorySlug: "$_id.categorySlug" },
+        _id: {
+          categoryName: "$_id.categoryName",
+          categorySlug: "$_id.categorySlug",
+        },
         subCategories: {
           $push: {
             subCategoryName: "$_id.subCategoryName",
             subCategorySlug: "$_id.subCategorySlug",
-            products: "$products"
-          }
-        }
-      }
+            products: "$products",
+          },
+        },
+      },
     },
 
     // final reshape
@@ -342,17 +349,16 @@ export const getAllFormatProducts = asyncHandler(async (req, res) => {
         _id: 0,
         categoryName: "$_id.categoryName",
         categorySlug: "$_id.categorySlug",
-        heroimage: "",   // optional static placeholder
+        heroimage: "", // optional static placeholder
         marketimg: "",
         description: "",
-        subCategories: 1
-      }
-    }
+        subCategories: 1,
+      },
+    },
   ]);
 
   res.json({ success: true, count: products.length, products });
 });
-
 
 export const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -373,12 +379,13 @@ export const getProductBySlug = asyncHandler(async (req, res) => {
   const product = await ProductModel.findOne({ productSlug: slug });
 
   if (!product) {
-    return res.status(404).json({ success: false, message: "Product not found" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Product not found" });
   }
 
   res.json({ success: true, product });
 });
-
 
 export const deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -447,7 +454,9 @@ export const getTrashedProducts = asyncHandler(async (req, res) => {
 
 // 🔎 Search products by name or keywords
 export const searchProducts = asyncHandler(async (req, res) => {
-  const { q } = req.query; // ?q=attendance
+  const { title } = req.query; // ?q=attendance
+
+  let q = title;
 
   if (!q) {
     return res.status(400).json({ message: "Search query (q) is required" });
@@ -461,11 +470,13 @@ export const searchProducts = asyncHandler(async (req, res) => {
     isDeleted: false,
     status: "published",
     $or: [
-      { productName: { $regex: q, $options: "i" } },       // normal search
+      { productName: { $regex: q, $options: "i" } }, // normal search
       { productName: { $regex: normalizedQuery, $options: "i" } }, // normalized match
-      { productkeywords: { $regex: q, $options: "i" } },   // keyword search
+      { productkeywords: { $regex: q, $options: "i" } }, // keyword search
     ],
-  }).select("productName categoryName subCategoryName productSlug status productImage");
+  }).select(
+    "productName categoryName subCategoryName productSlug status productImage"
+  );
 
   res.status(200).json({
     success: true,
@@ -474,16 +485,24 @@ export const searchProducts = asyncHandler(async (req, res) => {
   });
 });
 
-
 export const showProductByCat = asyncHandler(async (req, res) => {
   const { cat, subCat } = req.params;
+  console.log("showProductByCat==>", req.params);
 
-  const products = await ProductModel.find({
-    categorySlug: cat.toLowerCase(),
-    subCategorySlug: subCat.toLowerCase(),
-    status: "published",         // ✅ only published
-    isDeleted: false
-  });
+  let filter = {
+    status: "published",
+    isDeleted: false,
+  };
+
+  // ✅ Apply filters only if params exist
+  if (cat) {
+    filter.categorySlug = cat.toLowerCase();
+  }
+  if (subCat && subCat != "subCat")  {
+    filter.subCategorySlug = subCat.toLowerCase();
+  }
+
+  const products = await ProductModel.find(filter);
 
   if (!products.length) {
     return res.status(404).json({ message: "No products found" });
@@ -491,4 +510,3 @@ export const showProductByCat = asyncHandler(async (req, res) => {
 
   res.status(200).json(products);
 });
-
