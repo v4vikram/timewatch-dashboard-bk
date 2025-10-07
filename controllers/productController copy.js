@@ -274,32 +274,12 @@ export const updateProduct = asyncHandler(async (req, res) => {
   res.json({ success: true, product: updatedProduct });
 });
 
-// Example: GET /api/products
 export const getAllProducts = asyncHandler(async (req, res) => {
-    const products = await ProductModel.find({ isDeleted: false })
-        .sort({ categoryName: 1, subCategoryName: 1, display_order: 1 });
-    res.json({ success: true, count: products.length, products });
+  const products = await ProductModel.find({ isDeleted: false }).sort({
+    createdAt: -1,
+  }); // latest first
+  res.json({ success: true, count: products.length, products });
 });
-
-
-
-// PUT /api/products/reorder
-export const reorderProducts = asyncHandler(async (req, res) => {
-    const { subCategoryName, orderedIds } = req.body;
-    if (!subCategoryName || !Array.isArray(orderedIds)) {
-        return res.status(400).json({ success: false, message: "subCategoryName and orderedIds are required" });
-    }
-
-    // Update each product's display_order
-    for (let i = 0; i < orderedIds.length; i++) {
-        await ProductModel.findByIdAndUpdate(orderedIds[i], { display_order: i });
-    }
-
-    res.json({ success: true, message: "Product order updated successfully" });
-});
-
-
-
 export const getAllFeaturedProducts = asyncHandler(async (req, res) => {
   const products = await ProductModel.find({
     isDeleted: false,
@@ -308,19 +288,15 @@ export const getAllFeaturedProducts = asyncHandler(async (req, res) => {
   res.json({ success: true, count: products.length, products });
 });
 
-
-
 export const getAllFormatProducts = asyncHandler(async (req, res) => {
   const products = await ProductModel.aggregate([
     {
       $match: {
         isDeleted: false,
-        status: "published", // only published products
+        status: "published", // ✅ only published products
       },
     },
-    {
-      $sort: { categoryName: 1, subCategoryName: 1, display_order: 1 },
-    },
+    { $sort: { createdAt: -1 } },
 
     // group by category + subCategory to collect products
     {
@@ -335,7 +311,7 @@ export const getAllFormatProducts = asyncHandler(async (req, res) => {
           $push: {
             productName: "$productName",
             productSlug: "$productSlug",
-            productImage: "$productImage",
+            productimg: "$productImage",
             description: "$description",
             keywords: { $split: ["$productkeywords", ","] },
             features: "$features",
@@ -373,8 +349,8 @@ export const getAllFormatProducts = asyncHandler(async (req, res) => {
         _id: 0,
         categoryName: "$_id.categoryName",
         categorySlug: "$_id.categorySlug",
-        heroImage: "", // optional static placeholder
-        marketImage: "",
+        heroimage: "", // optional static placeholder
+        marketimg: "",
         description: "",
         subCategories: 1,
       },
@@ -383,7 +359,6 @@ export const getAllFormatProducts = asyncHandler(async (req, res) => {
 
   res.json({ success: true, count: products.length, products });
 });
-
 
 export const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
