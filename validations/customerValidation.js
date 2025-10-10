@@ -52,6 +52,14 @@ export const customerSchema = Joi.object({
         .messages({
             'string.max': 'Message must not exceed {#limit} characters',
         }),
+    type: Joi.string()
+        .trim()
+        .required()
+        .empty('') // if empty string comes, treat as missing → trigger required
+        .messages({
+            'string.empty': 'type is required',
+            'any.required': 'type is required',
+        }),
 });
 
 
