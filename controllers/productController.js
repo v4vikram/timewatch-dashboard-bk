@@ -26,11 +26,8 @@ export const createProduct = asyncHandler(async (req, res) => {
   const product = {
     categoryName: body.categoryName,
     subCategoryName: body.subCategoryName,
-
     categorySlug: slugify(body.categoryName),
-
     subCategorySlug: slugify(body.subCategoryName),
-
     productName: body.productName,
     productSlug: slug,
     description: body.description,
@@ -43,10 +40,12 @@ export const createProduct = asyncHandler(async (req, res) => {
     productFaq: [],
     features: [],
     table: [],
+    keyFeatures: [], // ✅ added
   };
 
   const getFile = (field) => files.find((f) => f.fieldname === field);
 
+  // handle file uploads
   const datasheetFile = getFile("datasheetFile");
   if (datasheetFile) {
     product.datasheetFile = await saveUploadedFileToGCS(datasheetFile, [
@@ -82,6 +81,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     ]);
   }
 
+  // features
   if (Array.isArray(body.features)) {
     for (let i = 0; i < body.features.length; i++) {
       const title = body.features[i].title;
@@ -99,6 +99,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     }
   }
 
+  // technical table
   if (Array.isArray(body.table)) {
     for (let i = 0; i < body.table.length; i++) {
       const column1 = body.table[i].column1;
@@ -107,6 +108,8 @@ export const createProduct = asyncHandler(async (req, res) => {
       product.table.push({ column1, column2 });
     }
   }
+
+  // FAQs
   if (Array.isArray(body.productFaq)) {
     for (let i = 0; i < body.productFaq.length; i++) {
       const column1 = body.productFaq[i].column1;
@@ -114,6 +117,13 @@ export const createProduct = asyncHandler(async (req, res) => {
 
       product.productFaq.push({ column1, column2 });
     }
+  }
+
+  // ✅ key features (optional array of strings)
+  if (Array.isArray(body.keyFeatures)) {
+    product.keyFeatures = body.keyFeatures.filter(
+      (feature) => feature && feature.trim() !== ""
+    );
   }
 
   const productCreated = await ProductModel.create(product);
@@ -129,9 +139,9 @@ export const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const body = req.body;
   const files = req.files || [];
-  // console.log("req.body", req.body);
 
-  // Find existing product
+  console.log("body.keyFeatures", body.keyFeatures)
+
   const existingProduct = await ProductModel.findById(id);
   if (!existingProduct) {
     return res
@@ -139,16 +149,13 @@ export const updateProduct = asyncHandler(async (req, res) => {
       .json({ success: false, message: "Product not found" });
   }
 
-  // Prepare update object (default to existing values)
   const product = {
     categoryName: body.categoryName || existingProduct.categoryName,
     categorySlug:
       slugify(body.categoryName) || slugify(existingProduct.categoryName),
-
     subCategoryName: body.subCategoryName || existingProduct.subCategoryName,
     subCategorySlug:
       slugify(body.subCategoryName) || slugify(existingProduct.subCategoryName),
-
     productName: body.productName || existingProduct.productName,
     productSlug: body.productSlug || existingProduct.productSlug,
     description: body.description || existingProduct.description,
@@ -164,11 +171,12 @@ export const updateProduct = asyncHandler(async (req, res) => {
     features: [],
     table: [],
     productImage: existingProduct.productImage,
+    keyFeatures: body.keyFeatures || existingProduct.keyFeatures || [], // ✅ added
   };
 
   const getFile = (field) => files.find((f) => f.fieldname === field);
 
-  // Save new files if provided
+  // file uploads
   const datasheetFile = getFile("datasheetFile");
   if (datasheetFile) {
     product.datasheetFile = await saveUploadedFileToGCS(datasheetFile, [
@@ -200,12 +208,8 @@ export const updateProduct = asyncHandler(async (req, res) => {
     product.productImage = await saveUploadedFileToGCS(productImage, [
       "uploads",
       "products",
-      "features",
+      "featured",
     ]);
-  }
-
-  if (product.features.length === 0) {
-    product.features = existingProduct.features; // Keep old features if none provided
   }
 
   // product features
@@ -223,50 +227,48 @@ export const updateProduct = asyncHandler(async (req, res) => {
           "features",
         ]);
       } else if (body.features[i].image) {
-        // Keep existing image if provided in body
         imageUrl = body.features[i].image;
       }
 
       newFeatures.push({ title, image: imageUrl });
     }
 
-    product.features = newFeatures; // Replace old features completely
+    product.features = newFeatures;
   } else {
-    product.features = existingProduct.features; // Keep old if none sent
+    product.features = existingProduct.features;
   }
 
-  if (product.table.length === 0) {
-    product.table = existingProduct.table; // Keep old table if none provided
-  }
-
-  // product technical table
+  // product table
   if (Array.isArray(body.table)) {
-    const updated = body.table.map((item) => ({
+    product.table = body.table.map((item) => ({
       column1: item.column1,
       column2: item.column2,
     }));
-
-    // replace existing with updated (safe way)
-    product.table = updated;
+  } else {
+    product.table = existingProduct.table;
   }
 
-  // product technical table
-  console.log("body.productFaq updated", body.productFaq);
-  if (body.productFaq == undefined) {
-    product.productFaq = [];
-  }
-
+  // FAQs
   if (Array.isArray(body.productFaq)) {
-    const updated = body.productFaq.map((item) => ({
+    product.productFaq = body.productFaq.map((item) => ({
       column1: item.column1,
       column2: item.column2,
     }));
-
-    // replace existing with updated (safe way)
-    product.productFaq = updated;
+  } else if (body.productFaq === undefined) {
+    product.productFaq = [];
+  } else {
+    product.productFaq = existingProduct.productFaq;
   }
 
-  // Update product in DB
+  // ✅ key features update (optional array of strings)
+  if (Array.isArray(body.keyFeatures)) {
+    product.keyFeatures = body.keyFeatures.filter(
+      (feature) => feature && feature.trim() !== ""
+    );
+  } else {
+    product.keyFeatures = existingProduct.keyFeatures;
+  }
+
   const updatedProduct = await ProductModel.findByIdAndUpdate(id, product, {
     new: true,
   });
