@@ -13,6 +13,7 @@ const io = new Server(server, {
     origin: [
       "http://localhost:3000", // frontend dev
       "http://localhost:3002",
+      "https://preview.timewatchindia.com",
       "https://timewatch2-0-311005204045.europe-west1.run.app",
       "https://timewatch-dashboard-fd-311005204045.europe-west1.run.app",
     ],
