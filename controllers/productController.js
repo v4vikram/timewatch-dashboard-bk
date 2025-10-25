@@ -82,9 +82,10 @@ export const createProduct = asyncHandler(async (req, res) => {
   }
 
   // features
-  if (Array.isArray(body.features)) {
+  if (Array.isArray(body.features) && body.features.length > 0) {
     for (let i = 0; i < body.features.length; i++) {
       const title = body.features[i].title;
+
       const imageFile = getFile(`features[${i}][image]`);
       let imageUrl = "";
 
@@ -94,8 +95,11 @@ export const createProduct = asyncHandler(async (req, res) => {
           "features",
         ]);
       }
+      if (title && imageUrl) {
 
-      product.features.push({ title, image: imageUrl });
+        product.features.push({ title, image: imageUrl });
+      }
+
     }
   }
 
@@ -105,7 +109,12 @@ export const createProduct = asyncHandler(async (req, res) => {
       const column1 = body.table[i].column1;
       const column2 = body.table[i].column2;
 
-      product.table.push({ column1, column2 });
+      if (column1 && column2) {
+
+        product.table.push({ column1, column2 });
+      }
+
+
     }
   }
 
@@ -115,7 +124,12 @@ export const createProduct = asyncHandler(async (req, res) => {
       const column1 = body.productFaq[i].column1;
       const column2 = body.productFaq[i].column2;
 
-      product.productFaq.push({ column1, column2 });
+      if (column1 && column2) {
+
+        product.productFaq.push({ column1, column2 });
+      }
+
+
     }
   }
 
@@ -140,7 +154,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
   const body = req.body;
   const files = req.files || [];
 
-  console.log("body.keyFeatures", body.keyFeatures)
+  console.log("body.features", body.features)
 
   const existingProduct = await ProductModel.findById(id);
   if (!existingProduct) {
@@ -213,7 +227,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
   }
 
   // product features
-  if (Array.isArray(body.features) && body.features.length > 0) {
+  if (Array.isArray(body.features)) {
     const newFeatures = [];
 
     for (let i = 0; i < body.features.length; i++) {
@@ -230,12 +244,21 @@ export const updateProduct = asyncHandler(async (req, res) => {
         imageUrl = body.features[i].image;
       }
 
-      newFeatures.push({ title, image: imageUrl });
+      if (title && imageUrl) {
+
+        newFeatures.push({ title, image: imageUrl });
+      }
     }
 
     product.features = newFeatures;
   } else {
-    product.features = existingProduct.features;
+    if (body.features == undefined) {
+      product.features = []
+    }
+    else {
+
+      product.features = existingProduct.features;
+    }
   }
 
   // product table
@@ -278,26 +301,26 @@ export const updateProduct = asyncHandler(async (req, res) => {
 
 // Example: GET /api/products
 export const getAllProducts = asyncHandler(async (req, res) => {
-    const products = await ProductModel.find({ isDeleted: false })
-        .sort({ categoryName: 1, subCategoryName: 1, display_order: 1 });
-    res.json({ success: true, count: products.length, products });
+  const products = await ProductModel.find({ isDeleted: false })
+    .sort({ categoryName: 1, subCategoryName: 1, display_order: 1 });
+  res.json({ success: true, count: products.length, products });
 });
 
 
 
 // PUT /api/products/reorder
 export const reorderProducts = asyncHandler(async (req, res) => {
-    const { subCategoryName, orderedIds } = req.body;
-    if (!subCategoryName || !Array.isArray(orderedIds)) {
-        return res.status(400).json({ success: false, message: "subCategoryName and orderedIds are required" });
-    }
+  const { subCategoryName, orderedIds } = req.body;
+  if (!subCategoryName || !Array.isArray(orderedIds)) {
+    return res.status(400).json({ success: false, message: "subCategoryName and orderedIds are required" });
+  }
 
-    // Update each product's display_order
-    for (let i = 0; i < orderedIds.length; i++) {
-        await ProductModel.findByIdAndUpdate(orderedIds[i], { display_order: i });
-    }
+  // Update each product's display_order
+  for (let i = 0; i < orderedIds.length; i++) {
+    await ProductModel.findByIdAndUpdate(orderedIds[i], { display_order: i });
+  }
 
-    res.json({ success: true, message: "Product order updated successfully" });
+  res.json({ success: true, message: "Product order updated successfully" });
 });
 
 
@@ -403,7 +426,8 @@ export const getProductById = asyncHandler(async (req, res) => {
 export const getProductBySlug = asyncHandler(async (req, res) => {
   const { slug } = req.params;
 
-  const product = await ProductModel.findOne({ productSlug: slug });
+  const product = await ProductModel.findOne({ productSlug: slug, isDeleted:false });
+  console.log("products", product)
 
   if (!product) {
     return res
@@ -525,7 +549,7 @@ export const showProductByCat = asyncHandler(async (req, res) => {
   if (cat) {
     filter.categorySlug = cat.toLowerCase();
   }
-  if (subCat && subCat != "subCat")  {
+  if (subCat && subCat != "subCat") {
     filter.subCategorySlug = subCat.toLowerCase();
   }
 
