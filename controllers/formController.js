@@ -10,7 +10,7 @@ export const homePageForm = asyncHandler(async (req, res) => {
   await formEntry.save();
 
   sendEmailToCompany({
-    to: ["v4vikram.dev@gmail.com"],
+    to: ["v4vikram.dev@gmail.com", "sales@timewatchindia.com"],
     subject: "New Customer Form Submission",
     html: generateEmailHTML(req.body, "New Customer Form Submission"),
   });
@@ -114,7 +114,7 @@ export const partnerPageForm = asyncHandler(async (req, res) => {
 
   // Notifications
   await sendEmailToCompany({
-    to: ["v4vikram.dev@gmail.com"],
+    to: ["v4vikram.dev@gmail.com", "hr@timewatchindia.com"],
     subject: "New Partner Form Submission",
     html: generateEmailHTML(req.body, "New Partner Form Submission"),
   });
