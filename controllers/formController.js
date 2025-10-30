@@ -128,3 +128,22 @@ export const partnerPageForm = asyncHandler(async (req, res) => {
   });
 });
 
+// Get All Partners
+export const getAllPartners = asyncHandler(async (req, res) => {
+  const partners = await Partner.find().sort({ createdAt: -1 });
+
+  if (!partners || partners.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "No partner entries found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    count: partners.length,
+    data: partners,
+  });
+});
+
+
