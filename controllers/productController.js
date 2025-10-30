@@ -302,8 +302,8 @@ export const updateProduct = asyncHandler(async (req, res) => {
 // Example: GET /api/products
 export const getAllProducts = asyncHandler(async (req, res) => {
   const products = await ProductModel.find({ isDeleted: false })
-    .sort({ categoryName: 1, subCategoryName: 1, display_order: 1 })
-    console.log(products)
+    .sort({ categoryName: 1, subCategoryName: 1, display_order: 1 }).select("productName productImage status")
+    // console.log(products)
   res.json({ success: true, count: products.length, products });
 });
 // export const getAllProductsForWebsite = asyncHandler(async (req, res) => {
@@ -353,8 +353,6 @@ export const getAllFormatProducts = asyncHandler(async (req, res) => {
     {
       $sort: { categoryName: 1, subCategoryName: 1, display_order: 1 },
     },
-
-    // group by category + subCategory to collect products
     {
       $group: {
         _id: {
@@ -367,22 +365,10 @@ export const getAllFormatProducts = asyncHandler(async (req, res) => {
           $push: {
             productName: "$productName",
             productSlug: "$productSlug",
-            productImage: "$productImage",
-            description: "$description",
-            keywords: { $split: ["$productkeywords", ","] },
-            features: "$features",
-            files: {
-              Datasheet: { link: "$datasheetFile" },
-              "Connection Diagram": { link: "$connectionDiagramFile" },
-              "User Manual": { link: "$userManualFile" },
-            },
-            table: "$table",
           },
         },
       },
     },
-
-    // group again by category to collect subcategories
     {
       $group: {
         _id: {
@@ -398,16 +384,11 @@ export const getAllFormatProducts = asyncHandler(async (req, res) => {
         },
       },
     },
-
-    // final reshape
     {
       $project: {
         _id: 0,
         categoryName: "$_id.categoryName",
         categorySlug: "$_id.categorySlug",
-        heroImage: "", // optional static placeholder
-        marketImage: "",
-        description: "",
         subCategories: 1,
       },
     },
@@ -417,10 +398,11 @@ export const getAllFormatProducts = asyncHandler(async (req, res) => {
 });
 
 
+
 export const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const product = await ProductModel.findById(id);
+  const product = await ProductModel.findById(id)
 
   if (!product) {
     return res
