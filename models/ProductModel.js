@@ -42,5 +42,13 @@ const productSchema = new mongoose.Schema({
   deletedAt: { type: Date, default: null }
 }, { timestamps: true });
 
+// ✅ Add compound index for faster find() + sort()
+productSchema.index({
+  isDeleted: 1,
+  categoryName: 1,
+  subCategoryName: 1,
+  display_order: 1
+});
+
 const ProductModel = mongoose.model("Product", productSchema);
 export default ProductModel;
