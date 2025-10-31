@@ -20,7 +20,8 @@ const allowedOrigins = [
   'https://timewatch-website-196626947975.asia-south1.run.app',
   "https://preview.timewatchindia.com",
   'https://timewatch-dashboard-fd-311005204045.europe-west1.run.app',
-  'https://timewatchindia.com'
+  'https://timewatchindia.com',
+  'https://www.timewatchindia.com'
 ];
 
 // Middlewares
