@@ -41,31 +41,6 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.static("public")); // serve uploaded files
 
-// -------------------------------------
-// 🔁 Redirect middleware (acts like .htaccess)
-// -------------------------------------
-app.use((req, res, next) => {
-  // If the request starts with /market-place/, permanently redirect to /products/
-  if (req.url.startsWith("/market-place/")) {
-    const newUrl = req.url.replace("/market-place/", "/products/");
-    return res.redirect(301, newUrl);
-  }
-
-  // ✅ Optional: handle specific old URLs → new URLs mapping (if any differ)
-  const redirects = {
-    "/market-place/time-attendance-and-access-control/ai-based-speed-face-series/trueface6000fp-pw":
-      "/products/time-attendance-and-access-control/ai-based-speed-face-series/trueface6000-pw",
-    "/market-place/time-attendance-and-access-control/ai-based-speed-face-series/trueface50-fp":
-      "/products/time-attendance-and-access-control/ai-based-speed-face-series/trueface50",
-    // Add more custom redirects here if needed
-  };
-
-  if (redirects[req.path]) {
-    return res.redirect(301, redirects[req.path]);
-  }
-
-  next();
-});
 
 // -------------------------------------
 // Routes

@@ -416,7 +416,7 @@ export const getProductBySlug = asyncHandler(async (req, res) => {
   const { slug } = req.params;
 
   const product = await ProductModel.findOne({ productSlug: slug, isDeleted:false });
-  console.log("products", product)
+  console.log("products",)
 
   if (!product) {
     return res
@@ -527,7 +527,7 @@ export const searchProducts = asyncHandler(async (req, res) => {
 
 export const showProductByCat = asyncHandler(async (req, res) => {
   const { cat, subCat } = req.params;
-  console.log("showProductByCat==>", req.params);
+
 
   let filter = {
     status: "published",

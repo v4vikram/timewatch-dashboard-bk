@@ -1,5 +1,5 @@
 import express from "express";
-import { deleteCustomerById, getAllCustomers, getAllPartners, homePageForm, partnerPageForm, updatedCustomer } from "../controllers/formController.js";
+import { createCareer, deleteCustomerById, getAllCareers, getAllCustomers, getAllPartners, homePageForm, partnerPageForm, updatedCustomer } from "../controllers/formController.js";
 import { validate } from "../middlewares/validateMiddleware.js"
 import { customerSchema, partnerSchema } from "../validations/customerValidation.js"
 
@@ -15,5 +15,7 @@ router.put('/customers/:id', updatedCustomer);
 router.delete('/customer/delete/:id', deleteCustomerById);
 router.get('/partners', getAllPartners);
 router.post('/partner', upload.any(), validate(partnerSchema), partnerPageForm);
+router.post('/career', upload.any(),  createCareer);
+router.get('/career', getAllCareers);
 
 export default router;
