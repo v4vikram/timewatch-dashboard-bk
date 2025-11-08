@@ -7,7 +7,10 @@ import { Career } from "../models/Career.js";
 
 // Customer Form
 export const homePageForm = asyncHandler(async (req, res) => {
-  const formEntry = new Customer(req.body);
+  const formEntry = new Customer({
+    ...req.body,
+    flag: true,
+  });
   await formEntry.save();
 
   sendEmailToCompany({

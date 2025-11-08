@@ -36,17 +36,11 @@ const customerSchema = new mongoose.Schema(
       trim: true,
       maxlength: [500, "Message must not exceed 500 characters"],
     },
-
-    type: {
+      type:{
       type: String,
-      enum: ["new", "sales", "support"],
-      default: "new",
-    },
-
-    flag: {
-      type: Boolean,
-      default: false, // initially false
-    },
+      enum:["new","sales","support"],
+      default:"new"
+    }
   },
   { timestamps: true }
 );
