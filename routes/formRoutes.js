@@ -4,6 +4,7 @@ import { validate } from "../middlewares/validateMiddleware.js"
 import { customerSchema, partnerSchema } from "../validations/customerValidation.js"
 
 import multer from "multer";
+import { landingPopupForm } from "../controllers/landingPopupController.js";
 const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
@@ -17,5 +18,6 @@ router.get('/partners', getAllPartners);
 router.post('/partner', upload.any(), validate(partnerSchema), partnerPageForm);
 router.post('/career', upload.any(),  createCareer);
 router.get('/career', getAllCareers);
+router.post("/landing-popup", landingPopupForm);
 
 export default router;
