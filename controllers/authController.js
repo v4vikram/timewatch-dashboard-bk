@@ -11,7 +11,7 @@ export const login = asyncHandler(async (req, res) => {
 
   // Find admin in DB
   const admin = await AuthModel.findOne({ email });
-  console.log("admin", req.body)
+  // console.log("admin", req.body)
 
   if (!admin || admin.password !== password) {
     return res.status(401).json({ success: false, message: "Invalid credentials" });
@@ -24,5 +24,5 @@ export const login = asyncHandler(async (req, res) => {
     { expiresIn: "1h" }
   );
 
-  res.status(200).json({ success: true, token });
+  res.status(200).json({ success: true, token, user:admin });
 });

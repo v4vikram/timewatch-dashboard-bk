@@ -9,7 +9,7 @@ router.get("/search", searchProducts);          // e.g., /product/id/64a...
 router.get("/slug/:slug", getProductBySlug);     // e.g., /product/slug/my-product
 router.get("/trashed", getTrashedProducts);
 router.get("/", getAllProducts);
-router.get("/", getAllProducts);
+// router.get("/", getAllProducts);
 // router.get("/website-products", getAllProductsForWebsite);
 // productRoutes.js
 

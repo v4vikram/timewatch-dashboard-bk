@@ -49,7 +49,7 @@ export async function saveUploadedFileToGCS(file, folderParts) {
   const extension = path.extname(file.originalname);
   const uuid = Math.random().toString(36).substr(2, 6);
 
-  const safeName = `${originalName}-${uuid}${extension}`;
+  const safeName = `${originalName}${extension}`;
   const destination = [...folderParts, safeName].join("/"); // e.g. products/datasheets/abc.pdf
 
   const blob = bucket.file(destination);
@@ -64,7 +64,7 @@ export async function saveUploadedFileToGCS(file, folderParts) {
         // Optional: make public
         // await blob.makePublic();
 
-        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${destination}`;
+        const publicUrl = `http://${bucket.name}/${destination}`;
         resolve(publicUrl);
       } catch (err) {
         reject(err);

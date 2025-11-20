@@ -2,7 +2,7 @@ import productRoutes from "./productRoutes.js";
 import formRoutes from "./formRoutes.js";
 import blogRoutes from "./blogRoutes.js";
 import authRoutes from "./authRoutes.js";
-import chatRoute from "./chatRoute.js";
+import postRoutes from "./postRoutes.js";
 
 
 const routeStartup = (app) => {
@@ -17,7 +17,9 @@ const routeStartup = (app) => {
     // auth
     app.use("/api/auth", authRoutes);
 
-    app.use("/api/chat", chatRoute);
+    // post
+    // app.use("/api/post", postRoutes);
+    
 
 }
 

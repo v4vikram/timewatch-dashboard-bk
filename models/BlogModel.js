@@ -2,16 +2,24 @@ import mongoose from "mongoose";
 
 const blogSchema = new mongoose.Schema({
     title: String,
-    slug:{
-        type:String,
-        unique:true
+    content: String,
+    metaTitle: String,
+    jsonLd: String,
+    slug: {
+        type: String,
+        unique: true
     },
-    description: String,
-    featuredImage:String,
-    category: String,
+     faq: [
+        { column1: String, column2: String }
+    ],
+    description: String, //using for seo
+    featuredImage: String,
+    mainCategory: String,
     subCategory: String,
     keywords: String,
     isFeatured: Boolean,
+    status: String,
+   
     isDeleted: {
         type: Boolean,
         default: false,
@@ -24,5 +32,5 @@ const blogSchema = new mongoose.Schema({
 
 
 
-const  BlogModel = mongoose.model("Blog", blogSchema);
+const BlogModel = mongoose.model("Blog", blogSchema);
 export default BlogModel;

@@ -302,7 +302,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
 // Example: GET /api/products
 export const getAllProducts = asyncHandler(async (req, res) => {
   const products = await ProductModel.find({ isDeleted: false })
-    .sort({ categoryName: 1, subCategoryName: 1, display_order: 1 }).select("productName productImage status")
+    .sort({ categoryName: 1, subCategoryName: 1, display_order: 1 }).select("productName categoryName subCategoryName productImage status")
     // console.log(products)
   res.json({ success: true, count: products.length, products });
 });
