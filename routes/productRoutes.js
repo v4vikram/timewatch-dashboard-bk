@@ -1,5 +1,5 @@
 import express from "express";
-import { createProduct, deleteProduct, getAllProducts,   getProductById, getAllFormatProducts,   getProductBySlug, getTrashedProducts, restoreProduct,  searchProducts,  showProductByCat,  trashProduct, updateProduct, getAllFeaturedProducts, reorderProducts } from "../controllers/productController.js";
+import { createProduct, deleteProduct, getAllProducts,   getProductById, getAllFormatProducts,   getProductBySlug, getTrashedProducts, restoreProduct,  searchProducts,  showProductByCat,  trashProduct, updateProduct, getAllFeaturedProducts, reorderProducts, getCategorySubcatsWithOneProduct,  } from "../controllers/productController.js";
 import multer from "multer";
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -26,12 +26,15 @@ router.post("/restore/:id", restoreProduct);
 router.delete("/:id", deleteProduct);
 router.get("/formated-product", getAllFormatProducts);
 // ✅ More specific dynamic route before less specific
+router.get("/by-category/:categorySlug", getCategorySubcatsWithOneProduct);
 router.get("/:cat/:subCat", showProductByCat);
 
 // ✅ Catch-all category last
 router.get("/:cat", showProductByCat);
 
 router.put("/reorder", reorderProducts);
+
+
 
 
 

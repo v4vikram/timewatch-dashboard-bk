@@ -550,3 +550,77 @@ export const showProductByCat = asyncHandler(async (req, res) => {
 
   res.status(200).json(products);
 });
+
+export const getCategorySubcatsWithOneProduct = asyncHandler(async (req, res) => {
+  const { categorySlug } = req.params;
+
+  if (!categorySlug) {
+    return res.status(400).json({
+      success: false,
+      message: "Category slug is required",
+    });
+  }
+
+  // 1️⃣ Get all unique subcategories under this category
+  const subCategories = await ProductModel.aggregate([
+    {
+      $match: {
+        categorySlug,
+        isDeleted: false
+      }
+    },
+    {
+      $group: {
+        _id: "$subCategorySlug",
+        subCategoryName: { $first: "$subCategoryName" }
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        subCategorySlug: "$_id",
+        subCategoryName: 1
+      }
+    }
+  ]);
+
+  // 2️⃣ For each subcategory → fetch ONLY required fields
+  const results = await Promise.all(
+    subCategories.map(async (subcat) => {
+      const product = await ProductModel.findOne(
+        {
+          isDeleted: false,
+          categorySlug,
+          subCategorySlug: subcat.subCategorySlug
+        },
+        {
+          // 🎯 ONLY return these fields
+          productName: 1,
+          productSlug: 1,
+          productImage: 1,
+          description: 1,
+          categorySlug: 1,
+          subCategorySlug: 1
+        }
+      )
+        .sort({ display_order: 1, createdAt: -1 })
+        .lean();
+
+      return {
+        subCategorySlug: subcat.subCategorySlug,
+        subCategoryName: subcat.subCategoryName,
+        product
+      };
+    })
+  );
+
+  res.json({
+    success: true,
+    count: results.length,
+    data: results,
+  });
+});
+
+
+
+
