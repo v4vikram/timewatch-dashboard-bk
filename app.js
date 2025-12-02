@@ -21,7 +21,8 @@ const allowedOrigins = [
   "https://preview.timewatchindia.com",
   'https://timewatch-dashboard-fd-311005204045.europe-west1.run.app',
   'https://timewatchindia.com',
-  'https://www.timewatchindia.com'
+  'https://www.timewatchindia.com',
+  'https://dashboard.timewatchindia.com'
 ];
 
 // Middlewares
