@@ -80,12 +80,13 @@ export const createBlog = asyncHandler(async (req, res) => {
 export const blogBySlug = asyncHandler(async (req, res) => {
   const { slug } = req.params;
 
-  const blog = await BlogModel.findOne({ slug });
+  let blog = await BlogModel.findOne({ slug }).lean();
+
 
   if (!blog) {
     return res.status(404).json({ success: false, message: "blog not found" });
   }
-
+  blog.mainCategorySlug = slugify(blog.mainCategory);
   res.json({ success: true, blog });
 });
 

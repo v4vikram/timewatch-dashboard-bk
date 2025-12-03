@@ -303,7 +303,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
 export const getAllProducts = asyncHandler(async (req, res) => {
   const products = await ProductModel.find({ isDeleted: false })
     .sort({ categoryName: 1, subCategoryName: 1, display_order: 1 }).select("productName categoryName subCategoryName productImage status")
-    // console.log(products)
+  // console.log(products)
   res.json({ success: true, count: products.length, products });
 });
 // export const getAllProductsForWebsite = asyncHandler(async (req, res) => {
@@ -415,7 +415,7 @@ export const getProductById = asyncHandler(async (req, res) => {
 export const getProductBySlug = asyncHandler(async (req, res) => {
   const { slug } = req.params;
 
-  const product = await ProductModel.findOne({ productSlug: slug, isDeleted:false });
+  const product = await ProductModel.findOne({ productSlug: slug, isDeleted: false });
   console.log("products",)
 
   if (!product) {
@@ -566,7 +566,8 @@ export const getCategorySubcatsWithOneProduct = asyncHandler(async (req, res) =>
     {
       $match: {
         categorySlug,
-        isDeleted: false
+        isDeleted: false,
+
       }
     },
     {
@@ -591,6 +592,7 @@ export const getCategorySubcatsWithOneProduct = asyncHandler(async (req, res) =>
         {
           isDeleted: false,
           categorySlug,
+          status: "published",
           subCategorySlug: subcat.subCategorySlug
         },
         {
@@ -600,7 +602,8 @@ export const getCategorySubcatsWithOneProduct = asyncHandler(async (req, res) =>
           productImage: 1,
           description: 1,
           categorySlug: 1,
-          subCategorySlug: 1
+          subCategorySlug: 1,
+          status: 1,
         }
       )
         .sort({ display_order: 1, createdAt: -1 })
