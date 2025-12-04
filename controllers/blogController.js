@@ -6,68 +6,73 @@ import slugify from "../utils/slugify.js";
 
 export const createBlog = asyncHandler(async (req, res) => {
   const body = req.body;
-  const files = req.files;
+  const files = req.files || [];
 
-  // Check existing slug or title
-  const exists = await BlogModel.findOne({ slug: body.slug });
-  const titleExist = await BlogModel.findOne({ title: body.title });
+  // Check existing title or slug
+  const slug = body.slug || slugify(body.title, { lower: true, strict: true });
+
+  const exists = await BlogModel.findOne({ slug, isDeleted: false });
+  const titleExists = await BlogModel.findOne({ title: body.title, isDeleted: false });
 
   if (exists) {
     return res.status(400).json({ success: false, message: "Slug already exists" });
   }
-  if (titleExist) {
+  if (titleExists) {
     return res.status(400).json({ success: false, message: "Title already exists" });
   }
 
   // Helper to get file
-  const getFile = (field) => files?.find((f) => f.fieldname === field);
+  const getFile = (field) => files.find((f) => f.fieldname === field);
 
-  /** -----------------------------
-   *   FEATURED IMAGE UPLOAD
-   *  -----------------------------
-   */
-  const featuredImage = getFile("featuredImage");
+  /** -------------------------
+   *  FEATURED IMAGE UPLOAD
+   --------------------------*/
+  let featuredImage = null;
+  const featuredImgFile = getFile("featuredImage");
 
-  let featuredImagePath = null;
-
-  if (featuredImage) {
-    featuredImagePath = await saveUploadedFileToGCS(featuredImage, [
+  if (featuredImgFile) {
+    featuredImage = await saveUploadedFileToGCS(featuredImgFile, [
       "uploads",
       "blogs",
       "featured",
     ]);
   }
 
-  /** -----------------------------
-   * Build Blog Object Like Product
-   * ----------------------------- */
+  /** -------------------------
+   *  BUILD BLOG OBJECT
+   --------------------------*/
   const blogData = {
     title: body.title,
-    slug: body.slug || slugify(body.title),
-    shortDescription: body.shortDescription,
+    slug: slug,
+    summaryTitle: body.summaryTitle || "",
+    summaryDescription: body.summaryDescription || "",
     content: body.content,
-    featuredImage: featuredImagePath,
+    featuredImage,
+    description: body.description, // SEO description
+    metaTitle: body.metaTitle,
+    jsonLd: body.jsonLd,
+    keywords: body.keywords,
+    mainCategory: body.mainCategory,
+    subCategory: body.subCategory,
     status: body.status,
-    blogKeywords: body.blogKeywords,
-    faq: [], // 🔥 Always initialize faq array
+    faq: [],
   };
 
-  /** -----------------------------
-   *       HANDLE FAQ ARRAY
-   * ----------------------------- */
-  console.log("body.faq", body.faq)
+  /** -------------------------
+   *  HANDLE FAQ ARRAY
+   --------------------------*/
   if (Array.isArray(body.faq)) {
-    body.faq.forEach((row) => {
-      if (row.column1 && row.column2) {
-        blogData.faq.push({
-          column1: row.column1,
-          column2: row.column2,
-        });
-      }
-    });
+    blogData.faq = body.faq
+      .filter((row) => row.column1 && row.column2)
+      .map((row) => ({
+        column1: row.column1,
+        column2: row.column2,
+      }));
   }
 
-  /** ---- CREATE BLOG ---- */
+  /** -------------------------
+   *  CREATE BLOG
+   --------------------------*/
   const created = await BlogModel.create(blogData);
 
   return res.status(201).json({
@@ -75,6 +80,7 @@ export const createBlog = asyncHandler(async (req, res) => {
     blog: created,
   });
 });
+
 
 
 export const blogBySlug = asyncHandler(async (req, res) => {
@@ -110,7 +116,7 @@ export const getAllBlog = asyncHandler(async (req, res) => {
 export const updateBlog = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const body = req.body;
-  const files = req.files;
+  const files = req.files || [];
 
   // Ensure blog exists
   const existingBlog = await BlogModel.findById(id);
@@ -131,9 +137,10 @@ export const updateBlog = asyncHandler(async (req, res) => {
     });
 
     if (titleExist) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Title already exists" });
+      return res.status(400).json({
+        success: false,
+        message: "Title already exists",
+      });
     }
   }
 
@@ -147,9 +154,10 @@ export const updateBlog = asyncHandler(async (req, res) => {
     });
 
     if (slugExist) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Slug already exists" });
+      return res.status(400).json({
+        success: false,
+        message: "Slug already exists",
+      });
     }
   }
 
@@ -159,48 +167,63 @@ export const updateBlog = asyncHandler(async (req, res) => {
   }
 
   /** ------------------------------------
-   *   Handle Image Upload
+   *   Handle Featured Image Upload
    * ------------------------------------ */
-  const getFile = (field) => files?.find((f) => f.fieldname === field);
+  const getFile = (field) => files.find((f) => f.fieldname === field);
   const featuredImageFile = getFile("featuredImage");
 
+  let featuredImage = existingBlog.featuredImage;
+
   if (featuredImageFile) {
-    // Upload new image
-    const uploadedPath = await saveUploadedFileToGCS(featuredImageFile, [
+    featuredImage = await saveUploadedFileToGCS(featuredImageFile, [
       "uploads",
       "blogs",
       "featured",
     ]);
-
-    // Remove old image (Optional – uncomment if needed)
-    // if (existingBlog.featuredImage) {
-    //   await deleteFileFromGCS(existingBlog.featuredImage);
-    // }
-
-    // Set new image URL
-    body.featuredImage = uploadedPath;
   }
 
-  // FAQs
-  console.log("body.faq", body.faq)
+  /** ------------------------------------
+   *   Handle FAQ
+   * ------------------------------------ */
+  let faq = existingBlog.faq;
+
   if (Array.isArray(body.faq)) {
-    for (let i = 0; i < body.faq.length; i++) {
-      const column1 = body.faq[i].column1;
-      const column2 = body.faq[i].column2;
-
-      if (column1 && column2) {
-
-        existingBlog.faq.push({ column1, column2 });
-      }
-
-
-    }
+    faq = body.faq
+      .filter((row) => row.column1 && row.column2)
+      .map((row) => ({
+        column1: row.column1,
+        column2: row.column2,
+      }));
   }
+
+  /** ------------------------------------
+   *   Build Updated Fields Object
+   * ------------------------------------ */
+  const updatedFields = {
+    title: body.title ?? existingBlog.title,
+    slug: body.slug ?? existingBlog.slug,
+    content: body.content ?? existingBlog.content,
+    description: body.description ?? existingBlog.description,
+    status: body.status ?? existingBlog.status,
+    keywords: body.keywords ?? existingBlog.keywords,
+    metaTitle: body.metaTitle ?? existingBlog.metaTitle,
+    jsonLd: body.jsonLd ?? existingBlog.jsonLd,
+    mainCategory: body.mainCategory ?? existingBlog.mainCategory,
+    subCategory: body.subCategory ?? existingBlog.subCategory,
+
+    // NEW FIELDS
+    summaryTitle: body.summaryTitle ?? existingBlog.summaryTitle,
+    summaryDescription: body.summaryDescription ?? existingBlog.summaryDescription,
+
+    // image + faq
+    featuredImage,
+    faq,
+  };
 
   /** ------------------------------------
    *   Update Blog
    * ------------------------------------ */
-  const updatedBlog = await BlogModel.findByIdAndUpdate(id, body, {
+  const updatedBlog = await BlogModel.findByIdAndUpdate(id, updatedFields, {
     new: true,
   });
 
@@ -210,6 +233,7 @@ export const updateBlog = asyncHandler(async (req, res) => {
     blog: updatedBlog,
   });
 });
+
 export const deleteBlog = asyncHandler(async (req, res) => {
   const { id } = req.params;
 

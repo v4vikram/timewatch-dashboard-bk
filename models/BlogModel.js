@@ -5,6 +5,9 @@ const blogSchema = new mongoose.Schema({
     content: String,
     metaTitle: String,
     jsonLd: String,
+    // NEW FIELDS — summary for listing pages / cards
+    summaryTitle: String,
+    summaryDescription: String,
     slug: {
         type: String,
         unique: true
