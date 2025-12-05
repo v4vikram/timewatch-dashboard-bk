@@ -43,12 +43,32 @@ const productSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // ✅ Add compound index for faster find() + sort()
+// productSchema.index({
+//   isDeleted: 1,
+//   categoryName: 1,
+//   subCategoryName: 1,
+//   display_order: 1
+// });
+
+// For product detail page
+productSchema.index({ productSlug: 1, isDeleted: 1 });
+
+// For category/subcategory listing
 productSchema.index({
+  categorySlug: 1,
+  subCategorySlug: 1,
   isDeleted: 1,
-  categoryName: 1,
-  subCategoryName: 1,
   display_order: 1
 });
+
+// For homepage / product lists
+productSchema.index({ isDeleted: 1, createdAt: -1 });
+
+// For filtering
+productSchema.index({ status: 1 });
+productSchema.index({ categorySlug: 1, status: 1 });
+productSchema.index({ subCategorySlug: 1, status: 1 });
+
 
 const ProductModel = mongoose.model("Product", productSchema);
 export default ProductModel;
