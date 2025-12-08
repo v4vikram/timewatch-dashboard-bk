@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 
+// BASE CDN URL
+const BASE_URL = "https://storage.googleapis.com/assets.timewatchindia.com";
+
 const productSchema = new mongoose.Schema({
   status: String,
   categoryName: String,
@@ -70,5 +73,72 @@ productSchema.index({ categorySlug: 1, status: 1 });
 productSchema.index({ subCategorySlug: 1, status: 1 });
 
 
-const ProductModel = mongoose.model("Product", productSchema);
+productSchema.virtual("productImageUrl").get(function () {
+  return this.productImage ? BASE_URL + this.productImage : null;
+});
+
+// ---------- FEATURES IMAGES ----------
+productSchema.virtual("featuresWithUrl").get(function () {
+  if (!this.features) return [];
+
+  return this.features.map(f => ({
+    ...f,
+    imageUrl: f.image ? BASE_URL + f.image : null
+  }));
+});
+
+// ---------- FILE URLS ----------
+productSchema.virtual("datasheetFileUrl").get(function () {
+  return this.datasheetFile ? BASE_URL + this.datasheetFile : null;
+});
+
+productSchema.virtual("connectionDiagramFileUrl").get(function () {
+  return this.connectionDiagramFile ? BASE_URL + this.connectionDiagramFile : null;
+});
+
+productSchema.virtual("userManualFileUrl").get(function () {
+  return this.userManualFile ? BASE_URL + this.userManualFile : null;
+});
+
+// ---------- ENABLE VIRTUALS IN JSON ----------
+productSchema.set("toJSON", {
+  virtuals: true,
+  transform: (_, ret) => {
+
+    // main product image
+    if (ret.productImage) {
+      ret.productImage = BASE_URL + ret.productImage;
+    }
+
+    // datasheet
+    if (ret.datasheetFile) {
+      ret.datasheetFile = BASE_URL + ret.datasheetFile;
+    }
+
+    // connection diagram
+    if (ret.connectionDiagramFile) {
+      ret.connectionDiagramFile = BASE_URL + ret.connectionDiagramFile;
+    }
+
+    // user manual
+    if (ret.userManualFile) {
+      ret.userManualFile = BASE_URL + ret.userManualFile;
+    }
+
+    // features image inside array
+    if (ret.features && Array.isArray(ret.features)) {
+      ret.features = ret.features.map(f => ({
+        ...f,
+        image: f.image ? BASE_URL + f.image : null
+      }));
+    }
+
+    return ret;
+  }
+});
+productSchema.set("toObject", { virtuals: true });
+
+
+const ProductModel = mongoose.model("updatedProduct", productSchema, "updatedProduct");
+// const ProductModel = mongoose.model("Product", productSchema);
 export default ProductModel;

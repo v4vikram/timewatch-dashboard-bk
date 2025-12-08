@@ -2,7 +2,7 @@ import asyncHandler from "express-async-handler";
 import { saveUploadedFileToGCS } from "../services/upload.gcs.service.js";
 import { saveUploadedFile } from "../utils/saveUploadedFile.js";
 import ProductModel from "../models/ProductModel.js";
-import slugify from "../utils/slugify.js";
+import slugify, { normalizeImageUrl } from "../utils/slugify.js";
 
 export const createProduct = asyncHandler(async (req, res) => {
   const body = req.body;
@@ -240,8 +240,10 @@ export const updateProduct = asyncHandler(async (req, res) => {
           "uploads",
           "features",
         ]);
+        console.log("if imageUrl", imageUrl)
       } else if (body.features[i].image) {
-        imageUrl = body.features[i].image;
+        //  console.log("else imageUrl", body.features[i].image)
+        imageUrl =normalizeImageUrl(body.features[i].image);
       }
 
       if (title && imageUrl) {

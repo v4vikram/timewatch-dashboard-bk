@@ -1,3 +1,19 @@
+export function normalizeImageUrl(url) {
+  if (!url) return "";
+
+  // Already relative → keep as-is
+  if (url.startsWith("/uploads")) return url;
+
+  // Full GCS URL → convert to relative
+  const parts = url.split("/uploads");
+  if (parts.length > 1) {
+    return "/uploads" + parts[1];
+  }
+
+  return url;
+}
+
+
 function slugify(text) {
     return decodeURIComponent(text) // Decode encoded characters (e.g., %20 → space)
       .toLowerCase() // Convert to lowercase

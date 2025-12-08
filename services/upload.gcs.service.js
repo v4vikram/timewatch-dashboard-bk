@@ -64,7 +64,9 @@ export async function saveUploadedFileToGCS(file, folderParts) {
         // Optional: make public
         // await blob.makePublic();
 
-        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${destination}`;
+        const publicUrl = `/${destination}`;
+        console.log(":publicUrl", publicUrl)
+        // const publicUrl = `https://storage.googleapis.com/${bucket.name}/${destination}`;
         resolve(publicUrl);
       } catch (err) {
         reject(err);
