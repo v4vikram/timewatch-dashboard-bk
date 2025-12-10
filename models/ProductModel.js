@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 
 // BASE CDN URL
-const BASE_URL = "https://storage.googleapis.com/assets.timewatchindia.com";
+// const BASE_URL = "http://localhost:3001";
+const BASE_URL = "http://72.60.202.56:3001";
 
 const productSchema = new mongoose.Schema({
   status: String,
