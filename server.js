@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import http from "http";
 import { Server } from "socket.io";
 import app from "./app.js";
@@ -11,6 +13,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: [
+      "http://72.60.202.56:3000", // frontend dev
       "http://localhost:3000", // frontend dev
       "http://localhost:3002",
       "https://preview.timewatchindia.com",
