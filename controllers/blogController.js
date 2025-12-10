@@ -172,6 +172,7 @@ export const updateBlog = asyncHandler(async (req, res) => {
   const getFile = (field) => files.find((f) => f.fieldname === field);
   const featuredImageFile = getFile("featuredImage");
 
+
   let featuredImage = existingBlog.featuredImage;
 
   if (featuredImageFile) {
@@ -181,6 +182,7 @@ export const updateBlog = asyncHandler(async (req, res) => {
       "featured",
     ]);
   }
+  console.log(":featuredImage", featuredImage)
 
   /** ------------------------------------
    *   Handle FAQ
