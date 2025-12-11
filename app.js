@@ -30,15 +30,23 @@ const allowedOrigins = [
 app.use(express.json());
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+    if (!origin) return callback(null, true); // Allow Postman, curl, etc.
+    const allowed = [
+      'https://timewatchindia.com',
+      'https://www.timewatchindia.com',
+      'https://dashboard.timewatchindia.com'
+    ];
+    if (allowed.some(a => origin === a || origin.startsWith(a))) {
+      callback(null, true);
     } else {
-      return callback(new Error('Not allowed by CORS'));
+      console.log('Blocked CORS for:', origin);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true
 }));
+
+
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.static("public")); // serve uploaded files
